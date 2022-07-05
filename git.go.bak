@@ -23,10 +23,10 @@ func gitListObjects(ref string, exclude []string) ([]string, error) {
 	}
 	revList := exec.Command("git", args...)
 	// dunno why - sometime git doesnt want to work on the inner repo/.git
-	if strings.HasSuffix(thisGitRepo, ".git") {
-		thisGitRepo = filepath.Dir(thisGitRepo)
+	if strings.HasSuffix(repo, ".git") {
+		repo = filepath.Dir(repo)
 	}
-	revList.Dir = thisGitRepo // GIT_DIR
+	revList.Dir = repo // GIT_DIR
 	out, err := revList.CombinedOutput()
 	if err != nil {
 		return nil, errors.Wrapf(err, "rev-list failed: %s\n%q", err, string(out))
@@ -78,14 +78,14 @@ func gitFlattenObject(sha1 string) (io.Reader, error) {
 
 func gitCatKind(sha1 string) (string, error) {
 	catFile := exec.Command("git", "cat-file", "-t", sha1)
-	catFile.Dir = thisGitRepo // GIT_DIR
+	catFile.Dir = repo // GIT_DIR
 	out, err := catFile.CombinedOutput()
 	return strings.TrimSpace(string(out)), err
 }
 
 func gitCatSize(sha1 string) (int64, error) {
 	catFile := exec.Command("git", "cat-file", "-s", sha1)
-	catFile.Dir = thisGitRepo // GIT_DIR
+	catFile.Dir = repo // GIT_DIR
 	out, err := catFile.CombinedOutput()
 	if err != nil {
 		return -1, errors.Wrapf(err, "catSize(%s): run failed", sha1)
@@ -95,7 +95,7 @@ func gitCatSize(sha1 string) (int64, error) {
 
 func gitCatData(sha1, kind string) (io.Reader, error) {
 	catFile := exec.Command("git", "cat-file", kind, sha1)
-	catFile.Dir = thisGitRepo // GIT_DIR
+	catFile.Dir = repo // GIT_DIR
 	stdout, err := catFile.StdoutPipe()
 	if err != nil {
 		return nil, errors.Wrapf(err, "catData(%s): stdoutPipe failed", sha1)
@@ -120,14 +120,14 @@ func gitCatData(sha1, kind string) (io.Reader, error) {
 
 func gitRefHash(ref string) (string, error) {
 	refParse := exec.Command("git", "rev-parse", ref)
-	refParse.Dir = thisGitRepo // GIT_DIR
+	refParse.Dir = repo // GIT_DIR
 	out, err := refParse.CombinedOutput()
 	return strings.TrimSpace(string(out)), err
 }
 
 func gitIsAncestor(a, ref string) error {
 	mergeBase := exec.Command("git", "merge-base", "--is-ancestor", a, ref)
-	mergeBase.Dir = thisGitRepo // GIT_DIR
+	mergeBase.Dir = repo // GIT_DIR
 	if out, err := mergeBase.CombinedOutput(); err != nil {
 		return errors.Wrapf(err, "merge-base failed: %q", string(out))
 	}

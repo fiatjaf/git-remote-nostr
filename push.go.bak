@@ -11,7 +11,7 @@ import (
 )
 
 func push(src, dst string) error {
-	var force = strings.HasPrefix(src, "+")
+	force := strings.HasPrefix(src, "+")
 	if force {
 		src = src[1:]
 	}
@@ -107,7 +107,7 @@ func push(src, dst string) error {
 		log.Log("err", err, "msg", "shell.Patch rm-link info/refs failed - might be okay... TODO")
 	}
 	newRemoteURL := fmt.Sprintf("ipfs:///ipfs/%s", root)
-	updateRepoCMD := exec.Command("git", "remote", "set-url", thisGitRemote, newRemoteURL)
+	updateRepoCMD := exec.Command("git", "remote", "set-url", remote, newRemoteURL)
 	out, err := updateRepoCMD.CombinedOutput()
 	if err != nil {
 		return errors.Wrapf(err, "updating remote url failed\nOut:%s", string(out))
